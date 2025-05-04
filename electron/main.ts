@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, shell, ipcMain } from "electron"
+import { app, BrowserWindow, screen, shell, ipcMain, globalShortcut } from "electron"
 import path from "path"
 import fs from "fs"
 import { initializeIpcHandlers } from "./ipcHandlers"
@@ -49,7 +49,10 @@ const state = {
     DEBUG_START: "debug-start",
     DEBUG_SUCCESS: "debug-success",
     DEBUG_ERROR: "debug-error"
-  } as const
+  } as const,
+
+  // New properties
+  preventHideOnBlur: false
 }
 
 // Add interfaces for helper classes
@@ -116,6 +119,8 @@ export interface IIpcHandlerDeps {
   getTextInputs: () => { id: string, text: string }[]
   addTextInput: (text: string) => string
   deleteTextInput: (id: string) => { success: boolean; error?: string }
+  relaunchApp: () => void
+  setPreventHideOnBlur: (prevent: boolean) => void
 }
 
 // Initialize helpers
@@ -375,6 +380,21 @@ async function createWindow(): Promise<void> {
     state.mainWindow.setOpacity(savedOpacity);
     state.isWindowVisible = true;
   }
+
+  // Add a mechanism to prevent hiding on blur for certain elements
+  state.mainWindow.on("blur", () => {
+    if (state.preventHideOnBlur) {
+      // Skip hiding if focus prevention is active
+      console.log("Skipping hide on blur due to preventHideOnBlur flag")
+      return
+    }
+    
+    if (process.platform === "darwin") {
+      app.hide() // This is smoother for macOS
+    } else {
+      hideMainWindow() // For other platforms
+    }
+  })
 }
 
 function handleWindowMove(): void {
@@ -542,6 +562,7 @@ async function initializeApp() {
     }
     
     initializeHelpers()
+    registerGlobalRelaunchShortcut()
     initializeIpcHandlers({
       getMainWindow,
       setWindowDimensions,
@@ -576,7 +597,9 @@ async function initializeApp() {
       addTextInput: (text: string) => state.screenshotHelper?.addTextInput(text) || "",
       deleteTextInput: (id: string) => 
         state.screenshotHelper?.deleteTextInput(id) || 
-        { success: false, error: "Screenshot helper not initialized" }
+        { success: false, error: "Screenshot helper not initialized" },
+      relaunchApp,
+      setPreventHideOnBlur
     })
     await createWindow()
     state.shortcutsHelper?.registerGlobalShortcuts()
@@ -593,6 +616,59 @@ async function initializeApp() {
     app.quit()
   }
 }
+
+// Function to register global relaunch shortcut
+function registerGlobalRelaunchShortcut() {
+  // Unregister the shortcut if it's already registered
+  try {
+    globalShortcut.unregister('CommandOrControl+Alt+R')
+  } catch (error) {
+    console.error('Error unregistering shortcut:', error)
+  }
+
+  // Register Ctrl+Alt+R (or Cmd+Alt+R on macOS) to relaunch the app
+  const success = globalShortcut.register('CommandOrControl+Alt+R', () => {
+    console.log('Relaunch shortcut triggered, restarting application...')
+    relaunchApp()
+  })
+  
+  if (!success) {
+    console.error('Failed to register relaunch shortcut')
+  } else {
+    console.log('Relaunch shortcut registered successfully')
+  }
+}
+
+// Relaunch the application
+function relaunchApp() {
+  try {
+    // Save any necessary state here if needed
+    
+    // Relaunch the app and then exit the current instance
+    app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+    app.exit(0)
+  } catch (error) {
+    console.error('Error relaunching app:', error)
+    
+    // As a fallback, try to restart the app the hard way
+    try {
+      const { spawn } = require('child_process')
+      spawn(process.execPath, process.argv.slice(1), {
+        detached: true,
+        stdio: 'inherit'
+      }).unref()
+      app.exit(0)
+    } catch (spawnError) {
+      console.error('Fallback relaunch also failed:', spawnError)
+    }
+  }
+}
+
+// Clean up on app quit
+app.on('will-quit', () => {
+  // Unregister all shortcuts when the app is about to quit
+  globalShortcut.unregisterAll()
+})
 
 // Auth callback handling removed - no longer needed
 app.on("open-url", (event, url) => {
@@ -732,6 +808,11 @@ function toggleAppMode(): void {
   console.log(`App mode toggled to: ${newMode}`);
 }
 
+// Add the setPreventHideOnBlur function
+function setPreventHideOnBlur(prevent: boolean) {
+  state.preventHideOnBlur = prevent
+}
+
 // Export state and functions for other modules
 export {
   state,
@@ -758,7 +839,9 @@ export {
   getHasDebugged,
   getAppMode,
   setAppMode,
-  toggleAppMode
+  toggleAppMode,
+  relaunchApp,
+  setPreventHideOnBlur
 }
 
 app.whenReady().then(initializeApp)

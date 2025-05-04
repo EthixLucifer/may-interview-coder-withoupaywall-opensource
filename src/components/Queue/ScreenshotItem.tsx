@@ -27,23 +27,23 @@ const ScreenshotItem: React.FC<ScreenshotItemProps> = ({
   return (
     <>
       <div
-        className={`border border-white relative w-[128px] h-[72px] ${
+        className={`relative w-[120px] h-[68px] opacity-90 ${
           isLoading ? "" : "group"
         }`}
       >
         <div className="w-full h-full relative">
           {isLoading && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 z-10 flex items-center justify-center">
-              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="absolute inset-0 bg-black bg-opacity-40 z-10 flex items-center justify-center">
+              <div className="w-4 h-4 border border-gray-400 border-t-transparent rounded-full animate-spin" />
             </div>
           )}
           <img
             src={screenshot.preview}
             alt="Screenshot"
-            className={`w-full h-full object-cover transition-transform duration-300 ${
+            className={`w-full h-full object-cover ${
               isLoading
                 ? "opacity-50"
-                : "cursor-pointer group-hover:scale-105 group-hover:brightness-75"
+                : "cursor-pointer group-hover:brightness-90"
             }`}
           />
         </div>
@@ -53,10 +53,10 @@ const ScreenshotItem: React.FC<ScreenshotItemProps> = ({
               e.stopPropagation()
               handleDelete()
             }}
-            className="absolute top-2 left-2 p-1 rounded-full bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            aria-label="Delete screenshot"
+            className="absolute top-1 right-1 p-0.5 rounded-sm bg-black bg-opacity-40 text-gray-300 opacity-0 group-hover:opacity-70 transition-opacity duration-200"
+            aria-label="Delete"
           >
-            <X size={16} />
+            <X size={12} />
           </button>
         )}
       </div>

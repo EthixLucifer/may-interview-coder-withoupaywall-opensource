@@ -9,139 +9,6 @@ import { Screenshot } from "../types/screenshots"
 import { ComplexitySection, ContentSection } from "./Solutions"
 import { useToast } from "../contexts/toast"
 
-// TextInput component for adding and managing text inputs
-interface TextInputProps {
-  isProcessing: boolean;
-}
-
-const TextInput: React.FC<TextInputProps> = ({ isProcessing }) => {
-  const [text, setText] = useState("");
-  const [textInputs, setTextInputs] = useState<Array<{ id: string; text: string }>>([]);
-  const { showToast } = useToast();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Load existing text inputs
-  useEffect(() => {
-    async function loadTextInputs() {
-      try {
-        const inputs = await window.electronAPI.getTextInputs();
-        setTextInputs(inputs);
-      } catch (error) {
-        console.error("Error loading text inputs:", error);
-      }
-    }
-    
-    loadTextInputs();
-    
-    // Set up listeners for text input events
-    const textInputAddedCleanup = window.electronAPI.onTextInputAdded((data) => {
-      setTextInputs(prev => [...prev, data]);
-    });
-    
-    const textInputDeletedCleanup = window.electronAPI.onTextInputDeleted((data) => {
-      setTextInputs(prev => prev.filter(input => input.id !== data.id));
-    });
-    
-    return () => {
-      textInputAddedCleanup();
-      textInputDeletedCleanup();
-    };
-  }, []);
-
-  const handleAddTextInput = async () => {
-    if (!text.trim()) return;
-    
-    try {
-      const result = await window.electronAPI.addTextInput(text.trim());
-      if (result.success) {
-        setText("");
-        showToast("Success", "Text input added successfully", "success");
-      } else {
-        showToast("Error", result.error || "Failed to add text input", "error");
-      }
-    } catch (error) {
-      console.error("Error adding text input:", error);
-      showToast("Error", "Failed to add text input", "error");
-    }
-  };
-
-  const handleDeleteTextInput = async (id: string) => {
-    try {
-      const result = await window.electronAPI.deleteTextInput(id);
-      if (result.success) {
-        showToast("Success", "Text input deleted", "success");
-      } else {
-        showToast("Error", result.error || "Failed to delete text input", "error");
-      }
-    } catch (error) {
-      console.error("Error deleting text input:", error);
-      showToast("Error", "Failed to delete text input", "error");
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Submit on Ctrl+Enter or Cmd+Enter
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      handleAddTextInput();
-    }
-  };
-
-  return (
-    <div className="space-y-3 w-full max-w-full">
-      <div className="flex flex-col space-y-2">
-        <div className="text-sm font-medium text-white">Debug Context</div>
-        <div className="flex flex-col space-y-2">
-          <textarea
-            ref={textareaRef}
-            className="w-full px-3 py-2 text-sm text-gray-100 bg-black/40 rounded-md resize-y"
-            rows={3}
-            placeholder="Add additional context about your issue or code (optional)"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            disabled={isProcessing}
-          />
-          <div className="flex justify-end">
-            <button
-              className="px-3 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleAddTextInput}
-              disabled={isProcessing || !text.trim()}
-            >
-              Add Context
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {textInputs.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-xs font-medium text-gray-300">Added Context</div>
-          <div className="space-y-2 max-h-[200px] overflow-y-auto">
-            {textInputs.map((input) => (
-              <div 
-                key={input.id} 
-                className="flex items-start px-3 py-2 text-sm text-gray-200 bg-black/30 rounded-md"
-              >
-                <div className="flex-1 whitespace-pre-wrap">{input.text}</div>
-                <button
-                  className="ml-2 p-1 text-gray-400 hover:text-gray-100"
-                  onClick={() => handleDeleteTextInput(input.id)}
-                  disabled={isProcessing}
-                  title="Remove context"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const CodeSection = ({
   title,
   code,
@@ -207,6 +74,16 @@ interface DebugProps {
   setIsProcessing: (isProcessing: boolean) => void
   currentLanguage: string
   setLanguage: (language: string) => void
+}
+
+interface DebugData {
+  id: string
+  language: string
+  code: string
+  sections: Array<{
+    title: string
+    content: string | string[]
+  }>
 }
 
 const Debug: React.FC<DebugProps> = ({
@@ -391,6 +268,18 @@ const Debug: React.FC<DebugProps> = ({
     }
   }
 
+  const handleProcessingResponse = (data: DebugData) => {
+    // ... existing code ...
+  }
+
+  const processLine = (line: string, lineIndex: number) => {
+    // ... existing code ...
+  }
+
+  const processSection = (part: { title: string, content: string | string[] }, partIndex: number) => {
+    // ... existing code ...
+  }
+
   return (
     <div ref={contentRef} className="relative">
       <div className="space-y-3 px-4 py-3">
@@ -406,9 +295,6 @@ const Debug: React.FC<DebugProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Text Input Component */}
-      <TextInput isProcessing={isProcessing} />
 
       {/* Navbar of commands with the tooltip */}
       <SolutionCommands

@@ -277,6 +277,12 @@ const electronAPI = {
       ipcRenderer.removeListener("text-input-deleted", subscription)
     }
   },
+  
+  // App relaunch method
+  relaunchApp: () => ipcRenderer.invoke("relaunch-app"),
+  
+  // Prevent hide on blur
+  setPreventHide: (prevent: boolean) => ipcRenderer.invoke("set-prevent-hide", prevent),
 }
 
 // Before exposing the API

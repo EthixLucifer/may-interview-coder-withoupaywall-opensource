@@ -61,6 +61,22 @@ All it takes is modest JavaScript/TypeScript knowledge and understanding of the 
 - 📝 Multiple Choice Support: New MCQ mode for analyzing and answering multiple-choice questions
 - 🔒 Privacy-Focused: Your API key and data never leave your computer except for API calls to your chosen provider
 
+## Latest Enhancements (v2.1.0)
+
+### Enhanced Stealth Mode
+
+We've significantly improved the stealth functionality with the following updates:
+
+- **Ultra-Low Profile UI**: Completely redesigned interface with minimal visual elements, reduced contrast, and smaller components that are harder to detect
+- **Text Input Functionality**: Added the ability to provide text context alongside screenshots, allowing for more precise debugging and solutions
+- **Application Resilience**: New app restart functionality (Ctrl+Alt+R shortcut) that helps recover from unresponsive states without returning to the terminal
+- **Focus Prevention**: Improved window focus handling to prevent the app from hiding when interacting with the text field
+- **Subtle Notifications**: Redesigned toast notifications to be smaller, less obvious, and placed in a more discreet location
+- **Reduced Visual Signatures**: Removed obvious UI elements like headers, titles, and bright colors that could attract attention
+- **More Transparent Elements**: All UI components now blend better with the background using increased transparency
+
+These enhancements make the application even more difficult to detect during proctored exams while providing additional functionality for effective problem-solving assistance.
+
 ## Dual Mode Support
 
 The application now supports two different modes to handle different types of interview questions:
@@ -98,6 +114,7 @@ The application uses unidentifiable global keyboard shortcuts that won't be dete
 - Zoom Out: [Control or Cmd + -]
 - Reset Zoom: [Control or Cmd + 0]
 - Zoom In: [Control or Cmd + =]
+- **New! Restart Application**: [Control or Cmd + Alt + R]
 
 ## Invisibility Compatibility
 
@@ -240,12 +257,20 @@ The MCQ mode works with various question formats, including:
 
 - **LLM Customization**: You can easily customize the app to include other LLMs by modifying the API calls in `ProcessingHelper.ts` and related UI components.
 
+- **Using Text Input**: The text input field is available from app startup. Use it to:
+  - Add context about the problem that may not be visible in screenshots
+  - Provide additional details for debugging (error messages, specific requirements)
+  - Submit code snippets that you want analyzed alongside screenshots
+  - Press Ctrl+Enter to quickly add your text input without clicking buttons
+
 - **Common Issues**:
   - Run `npm run clean` before starting the app for a fresh build
   - Use Ctrl+B/Cmd+B multiple times if the window doesn't appear
   - Adjust window opacity with Ctrl+[/]/Cmd+[/] if needed
   - For macOS: ensure script has execute permissions (`chmod +x stealth-run.sh`)
   - For MCQ mode: if question extraction is inconsistent, try capturing clearer screenshots
+  - If app becomes unresponsive: use Ctrl+Alt+R/Cmd+Alt+R to restart it without exiting to terminal
+  - If text field doesn't keep focus: click it again or press Ctrl+B/Cmd+B to hide/show the window
 
 ## Comparison with Paid Interview Tools
 
@@ -287,11 +312,13 @@ The MCQ mode works with various question formats, including:
 2. **Capturing Problems**
    - Use global shortcut [Control or Cmd + H] to take screenshots
    - Screenshots are automatically added to the queue
+   - Add supplementary text context in the text input field (new!)
    - If needed, remove the last screenshot with [Control or Cmd + L]
 
 3. **Processing**
-   - Press [Control or Cmd + Enter] to analyze the screenshots
+   - Press [Control or Cmd + Enter] to analyze the screenshots and text input
    - AI extracts problem requirements or MCQ questions from the screenshots
+   - Any additional text context is incorporated into the analysis
    - The model generates solutions or answers based on the extracted information
    - All analysis is done using your personal API key
 
@@ -299,6 +326,7 @@ The MCQ mode works with various question formats, including:
    - **Coding Mode**: View generated solutions with detailed explanations and complexity analysis
    - **MCQ Mode**: Get detailed analysis of each question with correct answers and explanations
    - Use debugging feature by taking more screenshots of error messages or code (Coding mode)
+   - Add additional context through the text input field for more precise debugging
    - Get structured analysis with identified issues, corrections, and optimizations
    - Toggle between solutions and queue views as needed
 
@@ -308,6 +336,7 @@ The MCQ mode works with various question formats, including:
    - Adjust opacity with [Control or Cmd + [] and [Control or Cmd + ]]
    - Window remains invisible to specified screen sharing applications
    - Start a new problem using [Control or Cmd + R]
+   - Restart the application if it becomes unresponsive using [Control or Cmd + Alt + R]
 
 6. **Language Selection**
    - Easily switch between programming languages with a single click

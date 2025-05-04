@@ -446,4 +446,38 @@ export function initializeIpcHandlers(deps: IIpcHandlerDeps): void {
       };
     }
   });
+
+  // Relaunch app handler
+  ipcMain.handle("relaunch-app", () => {
+    try {
+      if (deps.relaunchApp) {
+        console.log("Relaunch requested from renderer process")
+        deps.relaunchApp()
+        return { success: true }
+      } else {
+        console.error("relaunchApp function not available in deps")
+        return { success: false, error: "Relaunch function not available" }
+      }
+    } catch (error) {
+      console.error("Error relaunching app:", error)
+      return { success: false, error: error.message || "Failed to relaunch application" }
+    }
+  })
+
+  // Add handlers for text input focus prevention
+  ipcMain.handle("set-prevent-hide", (event, prevent: boolean) => {
+    try {
+      console.log(`Setting preventHideOnBlur to ${prevent}`)
+      if (deps.setPreventHideOnBlur) {
+        deps.setPreventHideOnBlur(prevent)
+        return { success: true }
+      } else {
+        console.error("setPreventHideOnBlur function not available in deps")
+        return { success: false, error: "Function not available" }
+      }
+    } catch (error) {
+      console.error("Error setting prevent hide flag:", error)
+      return { success: false, error: error.message || "Failed to set prevent hide flag" }
+    }
+  })
 }

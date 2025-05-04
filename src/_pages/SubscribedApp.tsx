@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useRef, useState } from "react"
 import Queue from "../_pages/Queue"
 import Solutions from "../_pages/Solutions"
+import TextInput from "../components/TextInput"
 import { useToast } from "../contexts/toast"
 
 interface SubscribedAppProps {
@@ -18,6 +19,7 @@ const SubscribedApp: React.FC<SubscribedAppProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const [view, setView] = useState<"queue" | "solutions" | "debug">("queue")
+  const [isProcessing, setIsProcessing] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const { showToast } = useToast()
 
@@ -134,23 +136,66 @@ const SubscribedApp: React.FC<SubscribedAppProps> = ({
     return () => cleanupFunctions.forEach((fn) => fn())
   }, [view])
 
+  // Listen for processing state changes
+  useEffect(() => {
+    const cleanupProcessingStart = window.electronAPI.onSolutionStart(() => {
+      setIsProcessing(true);
+    });
+
+    const cleanupProcessingSuccess = window.electronAPI.onSolutionSuccess(() => {
+      setIsProcessing(false);
+    });
+
+    const cleanupProcessingError = window.electronAPI.onSolutionError(() => {
+      setIsProcessing(false);
+    });
+
+    const cleanupDebugStart = window.electronAPI.onDebugStart(() => {
+      setIsProcessing(true);
+    });
+
+    const cleanupDebugSuccess = window.electronAPI.onDebugSuccess(() => {
+      setIsProcessing(false);
+    });
+
+    const cleanupDebugError = window.electronAPI.onDebugError(() => {
+      setIsProcessing(false);
+    });
+
+    return () => {
+      cleanupProcessingStart();
+      cleanupProcessingSuccess();
+      cleanupProcessingError();
+      cleanupDebugStart();
+      cleanupDebugSuccess();
+      cleanupDebugError();
+    };
+  }, []);
+
   return (
     <div ref={containerRef} className="min-h-0">
-      {view === "queue" ? (
-        <Queue
-          setView={setView}
-          credits={credits}
-          currentLanguage={currentLanguage}
-          setLanguage={setLanguage}
-        />
-      ) : view === "solutions" ? (
-        <Solutions
-          setView={setView}
-          credits={credits}
-          currentLanguage={currentLanguage}
-          setLanguage={setLanguage}
-        />
-      ) : null}
+      <div className="flex flex-col">
+        {view === "queue" ? (
+          <Queue
+            setView={setView}
+            credits={credits}
+            currentLanguage={currentLanguage}
+            setLanguage={setLanguage}
+          />
+        ) : view === "solutions" ? (
+          <Solutions
+            setView={setView}
+            credits={credits}
+            currentLanguage={currentLanguage}
+            setLanguage={setLanguage}
+          />
+        ) : null}
+        
+        {/* More stealthy TextInput with minimal spacing */}
+        <div className="w-1/2 mt-1 opacity-90">
+          <TextInput isProcessing={isProcessing} />
+        </div>
+      </div>
     </div>
   )
 }

@@ -67,6 +67,12 @@ export interface ElectronAPI {
   deleteTextInput: (id: string) => Promise<{ success: boolean; error?: string }>
   onTextInputAdded: (callback: (data: { id: string; text: string }) => void) => () => void
   onTextInputDeleted: (callback: (data: { id: string }) => void) => () => void
+  
+  // Reload app
+  relaunchApp: () => Promise<{ success: boolean; error?: string }>
+  
+  // Prevent window hide on blur when focusing text input
+  setPreventHide: (prevent: boolean) => Promise<{ success: boolean; error?: string }>
 }
 
 declare global {
