@@ -515,7 +515,7 @@ Strictly avoid guessing if the correct answer cannot be confidently determined f
 Always verify correctness by mentally simulating, logically deducing, or using formulae/concepts.
 Never fabricate answers. Prioritize accuracy over completion.
          IMPORTANT: Questions may be in various formats with different numbering styles and option formats (numbers, letters, or symbols). Return the information in a JSON format with an array of 'questions', where each question has: question_number, question_text, and options (key-value pairs with option letter/number and text). Just return the structured JSON without any other text.`
-        : "You are a coding challenge interpreter. Analyze the screenshot of the coding problem and extract all relevant information. Return the information in JSON format with these fields: problem_statement, constraints, example_input, example_output. Just return the structured JSON without any other text.";
+        : "You are a coding challenge interpreter. Analyze the screenshot of the coding problem and extract all relevant information. Return the information in JSON format with these fields: problem_statement, constraints, function_signature, example_input, example_output. Just return the structured JSON without any other text.";
 
       let problemInfo;
 
@@ -547,21 +547,14 @@ Never fabricate answers. Prioritize accuracy over completion.
                   ? `You are an expert in Computer Science and Quantitative Aptitude with deep knowledge of algorithms, data structures, databases, operating systems, networks, programming, and mathematical reasoning.
 
 Your task is to:
-
 Carefully read and analyze all multiple-choice questions (MCQs) shown in the screenshots or input text.
-
 Extract each MCQ clearly with its options.
-
 Provide the correct answer for each question.
-
 Explain why the selected answer is correct with reasoning based on standard academic and industry knowledge.
-
 Avoid hallucinations — if a question is ambiguous, clearly state the uncertainty or missing data.
-
 Strictly avoid guessing if the correct answer cannot be confidently determined from the available information.
 Always verify correctness by mentally simulating, logically deducing, or using formulae/concepts.
 Never fabricate answers. Prioritize accuracy over completion.
-
  The questions may appear in different formats such as numbered (1., 2.), lettered (a., b.), or with other markers. Options might be listed as A/B/C/D, a)/b)/c)/d), 1/2/3/4, or bullet points. 
                   
 Please identify all questions and their options carefully and return in this JSON format:
@@ -584,7 +577,7 @@ Please identify all questions and their options carefully and return in this JSO
     }
   ]
 }`
-                  : `Extract the coding problem details from these screenshots. Return in JSON format. Preferred coding language we gonna use for this problem is ${language}.`
+                  : `Extract the coding problem details from these screenshots and ensure to get the correct function signature where answer needs to be written. Return in JSON format. Preferred coding language we gonna use for this problem is ${language}.`
               },
               ...imageDataList.map(data => ({
                 type: "image_url" as const,
@@ -1261,7 +1254,7 @@ Format your response as JSON with this structure:
       // Create prompt for solution generation
       const promptText = `
 You are a world-class DSA problem solver & software engineer preparing candidates for top-tier tech interviews. Analyze the testcases of this coding question and give code that correctly passes all visible and hidden testcases and edgecases to solve this problem, give correct code by ensuring all testcases are passed both visible that are given and hidden which are not given, solution for the following coding problem:
-before giving the final code critically analyze your solution to ensure that no testcases and edge cases are missed and all are passed, also give time complexity and space complexity of your code in the end. 
+before giving the final code critically analyze your solution to ensure that no testcases and edge cases are missed and all are passed, while writing code ensure to write with correct function signature that is written in the question, also give time complexity and space complexity of your code in the end. 
 PROBLEM STATEMENT:
 ${problemInfo.problem_statement}
 
@@ -1277,7 +1270,7 @@ ${problemInfo.example_output || "No example output provided."}
 LANGUAGE: ${language}
 
 I need the response in the following format:
-1. Code: A clean implementation that passes all testcases for the question in ${language}
+1. Code: A clean implementation that passes all testcases for the question and follows the function signature of the question in${language}
 2. Your Thoughts: A list of key insights and reasoning behind your approach
 3. Time complexity: O(X) with a detailed explanation (at least 2 sentences)
 4. Space complexity: O(X) with a detailed explanation (at least 2 sentences)
@@ -1306,7 +1299,7 @@ Your solution should be pass all testcases, edge cases and adhere to constraints
               role: "system", content: `You are a world-class software engineer preparing candidates for top-tier tech interviews.
 Your task is to solve the following problem in ${language} such that:
 - The solution passes **all visible and hidden test cases**, including edge cases.
-- You provide a well-commented, clean implementation.
+- You provide a well-commented, clean implementation and follow the function signature of the question.
 - Your response contains no explanations before the code.` },
             { role: "user", content: promptText }
           ],
